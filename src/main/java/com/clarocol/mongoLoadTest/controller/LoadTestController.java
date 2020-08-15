@@ -14,20 +14,9 @@ public class LoadTestController {
   @Autowired
   LoadTestService loadTestService;
 
-  @GetMapping("/loadTest")
-  public TestResults launchTest(@RequestParam String operation, @RequestParam(required = false) String proportion,  @RequestParam Long repeat, @RequestParam Integer fields) {        
-    switch (operation) {
-      case "CREATE":
-        return loadTestService.create(repeat, fields, false);
-      case "READ":
-        return loadTestService.read(0.0);
-      case "UPDATE":
-        return loadTestService.update(0.0);
-      case "DELETE":
-        return loadTestService.delete();
-      default:
-        return new TestResults(0, 0L, 0L, "?", "Operations available 'CREATE', 'READ', 'UPDATE', 'DELETE'");
-    }
+  @GetMapping("/create")
+  public TestResults create(@RequestParam Long repeat, @RequestParam Integer fields) {        
+    return loadTestService.create(repeat, fields, false);
   }
 
   @GetMapping("/read")
@@ -35,4 +24,17 @@ public class LoadTestController {
     double prop = Double.parseDouble(proportion);
     return loadTestService.read(prop);
   }
+  
+  @GetMapping("/update")
+  public TestResults update(@RequestParam String proportion) {
+    double prop = Double.parseDouble(proportion);
+    return loadTestService.replace(prop);
+  }
+  
+  @GetMapping("/delete")
+  public TestResults delete(@RequestParam String proportion) {
+    double prop = Double.parseDouble(proportion);
+    return loadTestService.delete(prop);
+  }
+  
 }

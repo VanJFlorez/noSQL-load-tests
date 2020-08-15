@@ -1,9 +1,5 @@
 package com.clarocol.mongoLoadTest.service;
 
-import java.nio.charset.Charset;
-import java.util.Optional;
-import java.util.Random;
-
 import com.clarocol.mongoLoadTest.dto.TestResults;
 import com.clarocol.mongoLoadTest.entity.RandomDocument;
 import com.clarocol.mongoLoadTest.repository.LoadTestRepo;
@@ -20,7 +16,6 @@ public class LoadTestService {
   public TestResults create(long docsQtty, int fieldQtty, boolean sameDocs) {
     int minStrLength = 100;
     int maxStrLength = 200;
-    long collectionCount = loadTestRepo.count();
     long j = 0;
     long startTime = System.nanoTime();
     RandomDocument doc = new RandomDocument(fieldQtty, minStrLength, maxStrLength);
@@ -33,7 +28,7 @@ public class LoadTestService {
     long endTime = System.nanoTime();
     double elapsed = (endTime - startTime) / 1_000_000.0;
 
-    return new TestResults(elapsed, j, collectionCount, "CREATE", "Nice.");
+    return new TestResults(elapsed, j, loadTestRepo.count(), "CREATE", "Nice.");
   }
 
   public TestResults read(double proportion) {
@@ -46,21 +41,41 @@ public class LoadTestService {
     }
     long endTime = System.nanoTime();
     double elapsed = (endTime - startTime)/1_000_000.0;
-    return new TestResults(elapsed, i, collectionCount, "READ", "Nice.");
+    return new TestResults(elapsed, i, loadTestRepo.count(), "READ", "Nice.");
   }
 
-  public TestResults update(double proportion) {
+  public TestResults replace(double proportion) {
+    int minStrLength = 100;
+    int maxStrLength = 200;
+    int fieldQtty = 10;
+
     long collectionCount = loadTestRepo.count();
     long queriesQtty = (long) (collectionCount * proportion);
     long startTime = System.nanoTime();
     long i = 0;
-
+    for (i = 0; i < queriesQtty; i++) {
+      RandomDocument doc = loadTestRepo.randomSample();
+      String id = doc.get("_id");
+      doc = new RandomDocument(fieldQtty, minStrLength, maxStrLength);
+      doc.replace("_id", id);
+      doc = loadTestRepo.save(doc);
+    }
     long endTime = System.nanoTime();
     double elapsed = (endTime - startTime)/1_000_000.0;
-    return null;
+    return new TestResults(elapsed, i, loadTestRepo.count(), "UPDATE", "Nice.");
   }
   
-  public TestResults delete() {
-    return null;
+  public TestResults delete(double proportion) {
+    long collectionCount = loadTestRepo.count();
+    long queriesQtty = (long) (collectionCount * proportion);
+    long startTime = System.nanoTime();
+    long i = 0;
+    for (i = 0; i < queriesQtty; i++) {
+      RandomDocument doc = loadTestRepo.randomSample();
+      loadTestRepo.delete(doc);
+    }
+    long endTime = System.nanoTime();
+    double elapsed = (endTime - startTime)/1_000_000.0;
+    return new TestResults(elapsed, i, loadTestRepo.count(), "DELETE", "Nice.");
   }
 }

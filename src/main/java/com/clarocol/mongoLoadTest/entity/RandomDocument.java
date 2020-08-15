@@ -4,12 +4,16 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class RandomDocument extends HashMap<String, String> {
 
   private static final long serialVersionUID = -4166329813753130505L;
+
+  @Id
+  public Long id;
 
   public RandomDocument() {}
 
